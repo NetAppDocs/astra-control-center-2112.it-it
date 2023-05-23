@@ -1,0 +1,59 @@
+---
+sidebar: sidebar 
+permalink: release-notes/resolved-issues.html 
+keywords: astra, control center, fixed bugs, fixes, resolved issues 
+summary: 'I problemi noti identificano i problemi che potrebbero impedire l"utilizzo corretto di questa versione del prodotto.' 
+---
+= Problemi risolti
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/release-notes/
+
+
+Questi problemi sono stati corretti in questa versione del prodotto.
+
+
+
+== I backup aggiuntivi vengono conservati come parte del backup pianificato
+
+A volte uno o più backup in Astra Control Center vengono conservati oltre il numero specificato per essere conservati nella pianificazione del backup. Questi backup aggiuntivi devono essere cancellati come parte di un backup pianificato, ma non vengono cancellati e bloccati in un `pending` stato.
+
+
+
+== Il backup o il clone non riesce per le applicazioni che utilizzano PVC con unità decimali in Astra Control Center
+
+I volumi creati con unità decimali non riescono utilizzando il processo di backup o clone di Astra Control Center.
+
+
+
+== L'interfaccia utente di Astra Control Center mostra lentamente le modifiche apportate alle risorse dell'applicazione, ad esempio le modifiche persistenti del volume
+
+Dopo un'operazione di protezione dei dati (clone, backup, ripristino) e il successivo ridimensionamento persistente del volume, si verifica un ritardo di venti minuti prima che le nuove dimensioni del volume vengano visualizzate nell'interfaccia utente. Questo ritardo nell'interfaccia utente può verificarsi anche quando vengono aggiunte o modificate le risorse dell'applicazione. In questo caso, un'operazione di protezione dei dati viene eseguita correttamente in pochi minuti ed è possibile utilizzare il software di gestione per il back-end dello storage per confermare la modifica delle dimensioni del volume.
+
+
+
+== Associazione errata del ruolo del cluster creata dalla definizione di risorsa personalizzata di Astra Control Center durante l'installazione
+
+La patch per correggere l'associazione del ruolo del cluster durante l'installazione non è più necessaria in questa release.
+
+
+
+== Raccolta ASUP bloccata in uno stato di generazione o caricamento
+
+Se un pod ASUP viene arrestato o riavviato, una raccolta ASUP potrebbe bloccarsi in uno stato di generazione o caricamento.
+
+
+
+== Applicazioni e spazi dei nomi implementati dall'operatore
+
+Un operatore e l'applicazione che implementa devono utilizzare lo stesso namespace. Astra Control supporta solo un'applicazione implementata dall'operatore per spazio dei nomi.
+
+
+
+== Trova ulteriori informazioni
+
+* link:../release-notes/known-issues.html["Problemi noti"]
+* link:../release-notes/known-limitations.html["Limitazioni note"]
+* link:../release-notes/known-issues-ads.html["Problemi noti con l'anteprima di Astra Data Store e questa release di Astra Control Center"]
+

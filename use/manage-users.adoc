@@ -1,0 +1,113 @@
+---
+sidebar: sidebar 
+permalink: use/manage-users.html 
+keywords: add users, edit users, remove users, delete users 
+summary: Aggiungi utenti al tuo sistema Astra Control Center e rimuovi utenti che non dovrebbero più avere accesso al sistema. 
+---
+= Gestire gli utenti
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+È possibile aggiungere, rimuovere e modificare gli utenti dell'installazione di Astra Control Center utilizzando l'interfaccia utente di Astra Control Center. È possibile utilizzare l'interfaccia utente Astra o. https://docs.netapp.com/us-en/astra-automation/index.html["L'API Astra Control"^] per gestire gli utenti.
+
+
+
+== Aggiungere utenti
+
+Gli account Owner e gli amministratori possono aggiungere altri utenti all'installazione di Astra Control Center.
+
+.Fasi
+. Nell'area di navigazione *Gestisci account*, selezionare *account*.
+. Selezionare la scheda *utenti*.
+. Selezionare *Aggiungi utente*.
+. Immettere il nome dell'utente, l'indirizzo e-mail e una password temporanea.
++
+L'utente dovrà modificare la password al primo accesso.
+
+. Selezionare un ruolo utente con le autorizzazioni di sistema appropriate.
++
+Ciascun ruolo fornisce le seguenti autorizzazioni:
+
++
+** Un *Viewer* può visualizzare le risorse.
+** Un *Member* dispone delle autorizzazioni di ruolo Viewer e può gestire app e cluster, ma non può annullare la gestione di app o cluster o eliminare snapshot o backup.
+** Un *Admin* dispone delle autorizzazioni di ruolo membro e può aggiungere e rimuovere qualsiasi altro utente ad eccezione del Proprietario.
+** Un *Owner* dispone delle autorizzazioni di ruolo Admin e può aggiungere e rimuovere qualsiasi account utente.
+
+
+. Selezionare *Aggiungi*.
+
+
+
+
+== Gestire le password
+
+Puoi gestire le password per gli account utente in Astra Control Center.
+
+
+
+=== Modificare la password
+
+È possibile modificare la password dell'account utente in qualsiasi momento.
+
+.Fasi
+. Selezionare l'icona User (utente) nella parte superiore destra della schermata.
+. Selezionare *Profilo*.
+. Selezionare l'elenco a discesa *azioni* e selezionare *Modifica password*.
+. Immettere una password conforme ai requisiti.
+. Immettere nuovamente la password per confermare.
+. Selezionare *Cambia password*.
+
+
+
+
+=== Reimpostare la password di un altro utente
+
+Se l'account dispone delle autorizzazioni di ruolo Amministratore o Proprietario, è possibile reimpostare le password per altri account utente e per i propri. Quando si reimposta una password, si assegna una password temporanea che l'utente dovrà modificare al momento dell'accesso.
+
+.Fasi
+. Nell'area di navigazione *Gestisci account*, selezionare *account*.
+. Nella scheda *utenti*, selezionare l'elenco a discesa nella colonna *Stato* dell'utente.
+. Selezionare *Reset Password* (Ripristina password).
+. Immettere una password temporanea conforme ai requisiti della password.
+. Immettere nuovamente la password per confermare.
++
+
+NOTE: Al successivo accesso, all'utente verrà richiesto di modificare la password.
+
+. Selezionare *Ripristina password*.
+
+
+
+
+== Modificare il ruolo di un utente
+
+Gli utenti con il ruolo Owner possono modificare il ruolo di tutti gli utenti, mentre gli utenti con il ruolo Admin possono modificare il ruolo degli utenti con il ruolo Admin, Member o Viewer.
+
+.Fasi
+. Nell'area di navigazione *Gestisci account*, selezionare *account*.
+. Nella scheda *utenti*, selezionare l'elenco a discesa nella colonna *ruolo* dell'utente.
+. Selezionare un nuovo ruolo, quindi selezionare *Cambia ruolo* quando richiesto.
+
+
+.Risultato
+Astra Control Center aggiorna le autorizzazioni dell'utente in base al nuovo ruolo selezionato.
+
+
+
+== Rimuovere gli utenti
+
+Gli utenti con il ruolo Owner (Proprietario) o Admin (Amministratore) possono rimuovere altri utenti dall'account in qualsiasi momento.
+
+.Fasi
+. Nell'area di navigazione *Gestisci account*, selezionare *account*.
+. Nella scheda *utenti*, selezionare la casella di controllo nella riga di ciascun utente che si desidera rimuovere.
+. Selezionare *azioni* e selezionare *Rimuovi utente/i*.
+. Quando richiesto, confermare l'eliminazione digitando la parola "remove", quindi selezionare *Yes, Remove User* (Sì, Rimuovi utente).
+
+
+.Risultato
+Astra Control Center rimuove l'utente dall'account.

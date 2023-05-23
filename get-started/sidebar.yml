@@ -1,0 +1,24 @@
+---
+section: get-started
+title: Inizia subito
+entries:
+- title: Requisiti di Astra Control Center
+  url: "/get-started/requirements.html"
+- title: Avvio rapido per Astra Control Center
+  url: "/get-started/quick-start.html"
+- title: Panoramica dell'installazione
+  url: "/get-started/install_overview.html"
+  entries:
+  - title: Installare Astra Control Center
+    url: "/get-started/install_acc.html"
+  - title: Installare Astra Control Center utilizzando OpenShift OperatorHub
+    url: "/get-started/acc_operatorhub_install.html"
+- title: Configurare Astra Control Center
+  url: "/get-started/setup_overview.html"
+  entries:
+  - title: Prerequisiti per l'aggiunta di un cluster
+    url: "/get-started/add-cluster-reqs.html"
+  - title: Aggiungere un certificato TLS personalizzato
+    url: "/get-started/add-custom-tls-certificate.html"
+- title: FAQ
+  url: "/get-started/faq.html"

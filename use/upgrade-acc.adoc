@@ -1,0 +1,601 @@
+---
+sidebar: sidebar 
+permalink: use/upgrade-acc.html 
+keywords: astra upgrade, upgrade astra control center, how to upgrade astra control, update 
+summary: Per aggiornare Astra Control Center, scarica il bundle e aggiorna seguendo la procedura descritta. 
+---
+= Aggiornare Astra Control Center
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+Per aggiornare Astra Control Center, scaricare il pacchetto di installazione dal NetApp Support Site e completare queste istruzioni per aggiornare i componenti di Astra Control Center nel proprio ambiente. È possibile utilizzare questa procedura per aggiornare Astra Control Center in ambienti connessi a Internet o con connessione ad aria.
+
+.Di cosa hai bisogno
+* link:../get-started/requirements.html["Prima di iniziare l'aggiornamento, assicurarsi che l'ambiente soddisfi ancora i requisiti minimi per l'implementazione di Astra Control Center"].
+* Assicurarsi che tutti gli operatori del cluster siano in buono stato e disponibili.
++
+Esempio di OpenShift:
+
++
+[listing]
+----
+oc get clusteroperators
+----
+* Assicurarsi che tutti i servizi API siano in buono stato e disponibili.
++
+Esempio di OpenShift:
+
++
+[listing]
+----
+oc get apiservices
+----
+* Disconnettersi da Astra Control Center.
+
+
+.A proposito di questa attività
+Il processo di aggiornamento di Astra Control Center ti guida attraverso le seguenti fasi di alto livello:
+
+* <<Scarica il bundle Astra Control Center>>
+* <<Disimballare il bundle e modificare la directory>>
+* <<Aggiungere le immagini al registro locale>>
+* <<Installare l'operatore Astra Control Center aggiornato>>
+* <<Aggiornare Astra Control Center>>
+* <<Aggiornare i servizi di terze parti>>
+* <<Verificare lo stato del sistema>>
+
+
+
+IMPORTANT: Non eseguire il seguente comando durante l'intero processo di aggiornamento per evitare di eliminare tutti i pod di Astra Control Center: `kubectl delete -f astra_control_center_operator_deploy.yaml`
+
+
+TIP: Eseguire gli aggiornamenti in una finestra di manutenzione quando pianificazioni, backup e snapshot non sono in esecuzione.
+
+
+NOTE: I comandi Podman possono essere utilizzati al posto dei comandi Docker se si utilizza il Podman di Red Hat invece di Docker Engine.
+
+
+
+== Scarica il bundle Astra Control Center
+
+. Scarica il bundle di aggiornamento di Astra Control Center (`astra-control-center-[version].tar.gz`) da https://mysupport.netapp.com/site/products/all/details/astra-control-center/downloads-tab["Sito di supporto NetApp"^].
+. (Facoltativo) utilizzare il seguente comando per verificare la firma del bundle:
++
+[listing]
+----
+openssl dgst -sha256 -verify astra-control-center[version].pub -signature <astra-control-center[version].sig astra-control-center[version].tar.gz
+----
+
+
+
+
+== Disimballare il bundle e modificare la directory
+
+. Estrarre le immagini:
++
+[listing]
+----
+tar -vxzf astra-control-center-[version].tar.gz
+----
+. Passare alla directory Astra.
++
+[listing]
+----
+cd astra-control-center-[version]
+----
+
+
+
+
+== Aggiungere le immagini al registro locale
+
+. Aggiungere i file nella directory dell'immagine di Astra Control Center al registro locale.
++
+
+NOTE: Di seguito viene riportato uno script di esempio per il caricamento automatico delle immagini.
+
++
+.. Accedere al registro di sistema di Docker:
++
+[listing]
+----
+docker login [your_registry_path]
+----
+.. Caricare le immagini in Docker.
+.. Contrassegnare le immagini.
+.. [[substep_image_local_registry_push]]Trasmetti le immagini nel registro locale.
++
+[listing]
+----
+export REGISTRY=[your_registry_path]
+for astraImageFile in $(ls images/*.tar)
+  # Load to local cache. And store the name of the loaded image trimming the 'Loaded images: '
+  do astraImage=$(docker load --input ${astraImageFile} | sed 's/Loaded image: //')
+  astraImage=$(echo ${astraImage} | sed 's!localhost/!!')
+  # Tag with local image repo.
+  docker tag ${astraImage} ${REGISTRY}/${astraImage}
+  # Push to the local repo.
+  docker push ${REGISTRY}/${astraImage}
+done
+----
+
+
+
+
+
+
+== Installare l'operatore Astra Control Center aggiornato
+
+. Modificare l'yaml di implementazione dell'operatore di Astra Control Center (`astra_control_center_operator_deploy.yaml`) per fare riferimento al registro locale e al segreto.
++
+[listing]
+----
+vim astra_control_center_operator_deploy.yaml
+----
++
+.. Se si utilizza un registro che richiede l'autenticazione, sostituire la riga predefinita di `imagePullSecrets: []` con i seguenti elementi:
++
+[listing]
+----
+imagePullSecrets:
+- name: <name_of_secret_with_creds_to_local_registry>
+----
+.. Cambiare `[your_registry_path]` per `kube-rbac-proxy` al percorso del registro in cui sono state inviate le immagini in a. <<substep_image_local_registry_push,passaggio precedente>>.
+.. Cambiare `[your_registry_path]` per `acc-operator-controller-manager` al percorso del registro in cui sono state inviate le immagini in a. <<substep_image_local_registry_push,passaggio precedente>>.
+
+
++
+[listing, subs="+quotes"]
+----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: acc-operator-controller-manager
+  namespace: netapp-acc-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        *image: [your_registry_path]/kube-rbac-proxy:v4.8.0*
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --health-probe-bind-address=:8081
+        - --metrics-bind-address=127.0.0.1:8080
+        - --leader-elect
+        command:
+        - /manager
+        env:
+        - name: ACCOP_LOG_LEVEL
+          value: "2"
+        *image: [your_registry_path]/acc-operator:[version x.y.z]*
+        imagePullPolicy: IfNotPresent
+      *imagePullSecrets: []*
+----
+. Installare l'operatore Astra Control Center aggiornato:
++
+[listing]
+----
+kubectl apply -f astra_control_center_operator_deploy.yaml
+----
++
+Esempio di risposta:
+
++
+[listing]
+----
+namespace/netapp-acc-operator unchanged
+customresourcedefinition.apiextensions.k8s.io/astracontrolcenters.astra.netapp.io configured
+role.rbac.authorization.k8s.io/acc-operator-leader-election-role unchanged
+clusterrole.rbac.authorization.k8s.io/acc-operator-manager-role configured
+clusterrole.rbac.authorization.k8s.io/acc-operator-metrics-reader unchanged
+clusterrole.rbac.authorization.k8s.io/acc-operator-proxy-role unchanged
+rolebinding.rbac.authorization.k8s.io/acc-operator-leader-election-rolebinding unchanged
+clusterrolebinding.rbac.authorization.k8s.io/acc-operator-manager-rolebinding configured
+clusterrolebinding.rbac.authorization.k8s.io/acc-operator-proxy-rolebinding unchanged
+configmap/acc-operator-manager-config unchanged
+service/acc-operator-controller-manager-metrics-service unchanged
+deployment.apps/acc-operator-controller-manager configured
+----
+
+
+
+
+== Aggiornare Astra Control Center
+
+. Modificare la risorsa personalizzata Astra Control Center (CR) e modificare la versione di Astra (`astraVersion` all'interno di `Spec`) al numero più recente:
++
+[listing]
+----
+kubectl edit acc -n [netapp-acc or custom namespace]
+----
++
+
+NOTE: La modifica della versione Astra è l'unico requisito per un aggiornamento di Astra Control Center. Il percorso del Registro di sistema deve corrispondere al percorso del Registro di sistema in cui sono state inviate le immagini in a. <<substep_image_local_registry_push,passaggio precedente>>.
+
+. Verificare che i pod terminino e diventino nuovamente disponibili:
++
+[listing]
+----
+watch kubectl get pods -n [netapp-acc or custom namespace]
+----
+. Verificare che tutti i componenti del sistema siano stati aggiornati correttamente.
++
+[listing]
+----
+kubectl get pods -n [netapp-acc or custom namespace]
+----
++
+Ogni pod deve avere uno stato di `Running` e. `Age` recente. L'implementazione dei pod di sistema potrebbe richiedere alcuni minuti.
+
++
+Esempio di risposta:
+
++
+[listing]
+----
+NAME                                         READY   STATUS    RESTARTS   AGE
+acc-helm-repo-5f75c5f564-bzqmt             1/1     Running   0          11m
+activity-6b8f7cccb9-mlrn4                  1/1     Running   0          9m2s
+api-token-authentication-6hznt             1/1     Running   0          8m50s
+api-token-authentication-qpfgb             1/1     Running   0          8m50s
+api-token-authentication-sqnb7             1/1     Running   0          8m50s
+asup-5578bbdd57-dxkbp                      1/1     Running   0          9m3s
+authentication-56bff4f95d-mspmq            1/1     Running   0          7m31s
+bucketservice-6f7968b95d-9rrrl             1/1     Running   0          8m36s
+cert-manager-5f6cf4bc4b-82khn              1/1     Running   0          6m19s
+cert-manager-cainjector-76cf976458-sdrbc   1/1     Running   0          6m19s
+cert-manager-webhook-5b7896bfd8-2n45j      1/1     Running   0          6m19s
+cloud-extension-749d9f684c-8bdhq           1/1     Running   0          9m6s
+cloud-insights-service-7d58687d9-h5tzw     1/1     Running   2          8m56s
+composite-compute-968c79cb5-nv7l4          1/1     Running   0          9m11s
+composite-volume-7687569985-jg9gg          1/1     Running   0          8m33s
+credentials-5c9b75f4d6-nx9cz               1/1     Running   0          8m42s
+entitlement-6c96fd8b78-zt7f8               1/1     Running   0          8m28s
+features-5f7bfc9f68-gsjnl                  1/1     Running   0          8m57s
+fluent-bit-ds-h88p7                        1/1     Running   0          7m22s
+fluent-bit-ds-krhnj                        1/1     Running   0          7m23s
+fluent-bit-ds-l5bjj                        1/1     Running   0          7m22s
+fluent-bit-ds-lrclb                        1/1     Running   0          7m23s
+fluent-bit-ds-s5t4n                        1/1     Running   0          7m23s
+fluent-bit-ds-zpr6v                        1/1     Running   0          7m22s
+graphql-server-5f5976f4bd-vbb4z            1/1     Running   0          7m13s
+identity-56f78b8f9f-8h9p9                  1/1     Running   0          8m29s
+influxdb2-0                                1/1     Running   0          11m
+krakend-6f8d995b4d-5khkl                   1/1     Running   0          7m7s
+license-5b5db87c97-jmxzc                   1/1     Running   0          9m
+login-ui-57b57c74b8-6xtv7                  1/1     Running   0          7m10s
+loki-0                                     1/1     Running   0          11m
+monitoring-operator-9dbc9c76d-8znck        2/2     Running   0          7m33s
+nats-0                                     1/1     Running   0          11m
+nats-1                                     1/1     Running   0          10m
+nats-2                                     1/1     Running   0          10m
+nautilus-6b9d88bc86-h8kfb                  1/1     Running   0          8m6s
+nautilus-6b9d88bc86-vn68r                  1/1     Running   0          8m35s
+openapi-b87d77dd8-5dz9h                    1/1     Running   0          9m7s
+polaris-consul-consul-5ljfb                1/1     Running   0          11m
+polaris-consul-consul-s5d5z                1/1     Running   0          11m
+polaris-consul-consul-server-0             1/1     Running   0          11m
+polaris-consul-consul-server-1             1/1     Running   0          11m
+polaris-consul-consul-server-2             1/1     Running   0          11m
+polaris-consul-consul-twmpq                1/1     Running   0          11m
+polaris-mongodb-0                          2/2     Running   0          11m
+polaris-mongodb-1                          2/2     Running   0          10m
+polaris-mongodb-2                          2/2     Running   0          10m
+polaris-ui-84dc87847f-zrg8w                1/1     Running   0          7m12s
+polaris-vault-0                            1/1     Running   0          11m
+polaris-vault-1                            1/1     Running   0          11m
+polaris-vault-2                            1/1     Running   0          11m
+public-metrics-657698b66f-67pgt            1/1     Running   0          8m47s
+storage-backend-metrics-6848b9fd87-w7x8r   1/1     Running   0          8m39s
+storage-provider-5ff5868cd5-r9hj7          1/1     Running   0          8m45s
+telegraf-ds-dw4hg                          1/1     Running   0          7m23s
+telegraf-ds-k92gn                          1/1     Running   0          7m23s
+telegraf-ds-mmxjl                          1/1     Running   0          7m23s
+telegraf-ds-nhs8s                          1/1     Running   0          7m23s
+telegraf-ds-rj7lw                          1/1     Running   0          7m23s
+telegraf-ds-tqrkb                          1/1     Running   0          7m23s
+telegraf-rs-9mwgj                          1/1     Running   0          7m23s
+telemetry-service-56c49d689b-ffrzx         1/1     Running   0          8m42s
+tenancy-767c77fb9d-g9ctv                   1/1     Running   0          8m52s
+traefik-5857d87f85-7pmx8                   1/1     Running   0          6m49s
+traefik-5857d87f85-cpxgv                   1/1     Running   0          5m34s
+traefik-5857d87f85-lvmlb                   1/1     Running   0          4m33s
+traefik-5857d87f85-t2xlk                   1/1     Running   0          4m33s
+traefik-5857d87f85-v9wpf                   1/1     Running   0          7m3s
+trident-svc-595f84dd78-zb8l6               1/1     Running   0          8m54s
+vault-controller-86c94fbf4f-krttq          1/1     Running   0          9m24s
+----
+. Verificare che le condizioni di stato di Astra indichino che l'aggiornamento è completo e pronto:
++
+[listing]
+----
+kubectl get -o yaml -n [netapp-acc or custom namespace] astracontrolcenters.astra.netapp.io astra
+----
++
+Risposta:
+
++
+[listing]
+----
+conditions:
+  - lastTransitionTime: "2021-10-25T18:49:26Z"
+    message: Astra is deployed
+    reason: Complete
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2021-10-25T18:49:26Z"
+    message: Upgrading succeeded.
+    reason: Complete
+    status: "False"
+    type: Upgrading
+----
+
+
+
+
+== Aggiornare i servizi di terze parti
+
+I servizi di terze parti Traefik e Cert-manager non vengono aggiornati durante le fasi di aggiornamento precedenti. Se necessario, è possibile aggiornarli utilizzando la procedura descritta qui o conservare le versioni dei servizi esistenti. Di seguito è riportata la sequenza di aggiornamento consigliata per Traefik e Certs-manager:
+
+. <<Configurare acc-helm-repo per aggiornare Traefik e Cert-manager>>
+. <<Aggiornare il servizio Traefik utilizzando acc-helm-repo>>
+. <<Aggiornare il servizio Cert-manager>>
+
+
+
+
+== Configurare acc-helm-repo per aggiornare Traefik e Cert-manager
+
+. Individuare il `enterprise-helm-repo` Che viene caricato nella cache Docker locale:
++
+[listing]
+----
+docker images enterprise-helm-repo
+----
++
+Risposta:
+
++
+[listing]
+----
+REPOSITORY             TAG         IMAGE ID       CREATED        SIZE
+enterprise-helm-repo   21.10.218   7a182d6b30f3   20 hours ago   464MB
+----
+. Avviare un container utilizzando il tag del passaggio precedente:
++
+[listing]
+----
+docker run -dp 8082:8080 enterprise-helm-repo:21.10.218
+----
++
+Risposta:
+
++
+[listing]
+----
+940436e67fa86d2c4559ac4987b96bb35588313c2c9ddc9cec195651963f08d8
+----
+. Aggiungi Helm repo ai repository host locali:
++
+[listing]
+----
+helm repo add acc-helm-repo http://localhost:8082/
+----
++
+Risposta:
+
++
+[listing]
+----
+"acc-helm-repo" has been added to your repositories
+----
+. Salvare il seguente script Python come file, ad esempio `set_previous_values.py`:
++
+
+NOTE: Questo script Python crea due file che vengono utilizzati nelle fasi di aggiornamento successive per mantenere i valori di Helm.
+
++
+[listing]
+----
+#!/usr/bin/env python3
+import json
+import os
+
+NAMESPACE = "netapp-acc"
+
+os.system(f"helm get values traefik -n {NAMESPACE} -o json > traefik_values.json")
+os.system(f"helm get values cert-manager -n {NAMESPACE} -o json > cert_manager_values.json")
+
+# reformat traefik values
+f = open("traefik_values.json", "r")
+traefik_values = {'traefik': json.load(f)}
+f.close()
+
+with open('traefik_values.json', 'w') as output_file:
+    json.dump(traefik_values, output_file)
+
+# reformat cert-manager values
+f = open("cert_manager_values.json", "r")
+cm_values = {'cert-manager': json.load(f)}
+f.close()
+
+cm_values['global'] = cm_values['cert-manager']['global']
+del cm_values['cert-manager']['global']
+
+with open('cert_manager_values.json', 'w') as output_file:
+    json.dump(cm_values, output_file)
+
+print('Done')
+----
+. Eseguire lo script:
++
+[listing]
+----
+python3.7 ./set_previous_values.py
+----
+
+
+
+
+== Aggiornare il servizio Traefik utilizzando acc-helm-repo
+
+
+NOTE: Devi già disporre di <<Configurare acc-helm-repo per aggiornare Traefik e Cert-manager,configurare acc-helm-repo>> prima di completare la seguente procedura.
+
+. Scarica il bundle Traefik usando un tool sicuro per il trasferimento dei file, come GNU wget:
++
+[listing]
+----
+wget http://localhost:8082/traefik-0.2.0.tgz
+----
+. Estrarre le immagini:
++
+[listing]
+----
+tar -vxzf traefik-0.2.0.tgz
+----
+. Applicare i CRD Traefik:
++
+[listing]
+----
+kubectl apply -f ./traefik/charts/traefik/crds/
+----
+. Trova la versione della mappa Helm da utilizzare con il Traefik aggiornato:
++
+[listing]
+----
+helm search repo acc-helm-repo/traefik
+----
++
+Risposta:
+
++
+[listing]
+----
+NAME                                    CHART VERSION   APP VERSION DESCRIPTION
+acc-helm-repo/traefik                 0.2.0           2.5.3       Helm chart for Traefik Ingress controller
+acc-helm-repo/traefik-ingressroutes   0.2.0           2.5.3       A Helm chart for Kubernetes
+----
+. Convalidare il file traefik_values.json per l'aggiornamento:
++
+.. Aprire il file traefik_values.json.
+.. Verificare la presenza di un valore per `imagePullSecret` campo. Se è vuoto, rimuovere il testo seguente dal file:
++
+[listing]
+----
+"imagePullSecrets": [{"name": ""}],
+----
+.. Assicurarsi che l'immagine traefik sia indirizzata alla posizione corretta e abbia il nome corretto:
++
+[listing]
+----
+image: [your_registry_path]/traefik
+----
+
+
+. Aggiorna la configurazione di Traefik:
++
+[listing]
+----
+helm upgrade --version 0.2.0 --namespace netapp-acc -f traefik_values.json traefik acc-helm-repo/traefik
+----
++
+Risposta:
+
++
+[listing]
+----
+Release "traefik" has been upgraded. Happy Helming!
+NAME: traefik
+LAST DEPLOYED: Mon Oct 25 22:53:19 2021
+NAMESPACE: netapp-acc
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+----
+
+
+
+
+== Aggiornare il servizio Cert-manager
+
+
+NOTE: È necessario aver già completato il <<Aggiornare il servizio Traefik utilizzando acc-helm-repo,Aggiornamento Traefik>> e. <<Configurare acc-helm-repo per aggiornare Traefik e Cert-manager,Aggiunta di acc-helm-repo in Helm>> prima di completare la seguente procedura.
+
+. Trova la versione della tabella di comando da utilizzare con il tuo Cert-manager aggiornato:
++
+[listing]
+----
+helm search repo acc-helm-repo/cert-manager
+----
++
+Risposta:
+
++
+[listing]
+----
+NAME CHART VERSION APP VERSION DESCRIPTION
+acc-helm-repo/cert-manager 0.3.0 v1.5.4 A Helm chart for cert-manager
+acc-helm-repo/cert-manager-certificates 0.1.0 1.16.0 A Helm chart for Kubernetes
+----
+. Convalidare il file cert_manager_values.json per l'aggiornamento:
++
+.. Aprire il file cert_manager_values.json.
+.. Verificare la presenza di un valore per `imagePullSecret` campo. Se è vuoto, rimuovere il testo seguente dal file:
++
+[listing]
+----
+"imagePullSecrets": [{"name": ""}],
+----
+.. Assicurarsi che le tre immagini del gestore dei certificati siano indirizzate alla posizione corretta e abbiano i nomi corretti.
+
+
+. Aggiorna la configurazione di Cert-Manager:
++
+[listing]
+----
+helm upgrade --version 0.3.0 --namespace netapp-acc -f cert_manager_values.json cert-manager acc-helm-repo/cert-manager
+----
++
+Risposta:
+
++
+[listing]
+----
+Release "cert-manager" has been upgraded. Happy Helming!
+NAME: cert-manager
+LAST DEPLOYED: Tue Nov 23 11:20:05 2021
+NAMESPACE: netapp-acc
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+----
+
+
+
+
+== Verificare lo stato del sistema
+
+. Accedere ad Astra Control Center.
+. Verificare che tutti i cluster e le applicazioni gestiti siano ancora presenti e protetti.
+

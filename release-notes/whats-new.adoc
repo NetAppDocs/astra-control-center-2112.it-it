@@ -1,0 +1,66 @@
+---
+sidebar: sidebar 
+permalink: release-notes/whats-new.html 
+keywords: 'what"s new, bugs, bug fixes, new features, enhancements' 
+summary: NetApp aggiorna periodicamente Astra Control Center per offrire nuove funzionalità, miglioramenti e correzioni di bug. 
+---
+= Novità di questa release di Astra Control Center
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/release-notes/
+
+
+Siamo lieti di annunciare l'ultima release 21.12 di Astra Control Center.
+
+
+
+== 14 dicembre 2021 (21.12)
+
+Release aggiornata di Astra Control Center.
+
+.Nuove funzionalità e supporto
+* link:../use/restore-apps.html["Ripristino dell'applicazione"]
+* link:../use/execution-hooks.html["Ganci di esecuzione"]
+* link:../get-started/requirements.html#supported-app-installation-methods["Supporto per le applicazioni implementate con operatori con ambito namespace"]
+* link:../get-started/requirements.html["Supporto aggiuntivo per Kubernetes e Rancher upstream"]
+* link:../get-started/setup_overview.html#add-a-storage-backend["Astra Data Store visualizza in anteprima la gestione e il monitoraggio del back-end"]
+* link:../use/upgrade-acc.html["Aggiornamenti di Astra Control Center"]
+* link:../get-started/acc_operatorhub_install.html["Opzione Red Hat OperatorHub per l'installazione"]
+
+
+.Problemi risolti
+* link:../release-notes/resolved-issues.html["Problemi risolti per questa release"]
+
+
+.Problemi noti e limitazioni
+* link:../release-notes/known-issues.html["Problemi noti per questa release"]
+* link:../release-notes/known-issues-ads.html["Problemi noti con l'anteprima di Astra Data Store e questa release di Astra Control Center"]
+* link:../release-notes/known-limitations.html["Limitazioni note per questa versione"]
+
+
+
+
+== 5 agosto 2021 (21.08)
+
+Release iniziale di Astra Control Center.
+
+* link:../concepts/intro.html["Che cos'è"]
+* link:../concepts/architecture.html["Comprendere l'architettura e i componenti"]
+* link:../get-started/requirements.html["Cosa serve per iniziare"]
+* link:../get-started/install_acc.html["Installare"] e. link:../get-started/setup_overview.html["setup (configurazione)"]
+* link:../use/manage-apps.html["Gestire"] e. link:../use/protect-apps.html["proteggere"] applicazioni
+* link:../use/manage-buckets.html["Gestire i bucket"] e. link:../use/manage-backend.html["back-end dello storage"]
+* link:../use/manage-users.html["Gestire gli account"]
+* link:../rest-api/api-intro.html["Automatizzare con API"]
+
+
+
+
+== Trova ulteriori informazioni
+
+* link:../release-notes/known-issues.html["Problemi noti per questa release"]
+* link:../release-notes/known-limitations.html["Limitazioni note per questa versione"]
+* https://docs.netapp.com/us-en/astra-data-store/index.html["Documentazione di Astra Data Store"]
+* link:../acc-earlier-versions.html["Versioni precedenti della documentazione di Astra Control Center"]
+

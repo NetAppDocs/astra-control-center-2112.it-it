@@ -1,0 +1,14 @@
+---
+section: concepts
+title: Concetti
+entries:
+- title: Introduzione a Astra Control
+  url: "/concepts/intro.html"
+- title: Architettura e componenti
+  url: "/concepts/architecture.html"
+- title: Protezione dei dati
+  url: "/concepts/data-protection.html"
+- title: Applicazioni validate e standard
+  url: "/concepts/validated-vs-standard.html"
+- title: Classi di storage e dimensioni PV
+  url: "/concepts/choose-class-and-size.html"

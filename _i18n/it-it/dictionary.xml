@@ -117,8 +117,6 @@
   <block id="641aa484b65c0e7fde013bc2c73c8773" category="cell">Comunicazione Cloud Insights</block>
   <block id="dca17a8eb713c4979ff90034336d90db" category="cell">Provider di bucket di storage Amazon S3 <block ref="6d2d5f5177a501d9243c3b34db24ae94" category="inline-link-rx"></block>)</block>
   <block id="30e3526a27f1ee2a9a8203d224600891" category="cell">Comunicazione con lo storage Amazon S3</block>
-  <block id="814db317c49c42a57e9b5fe4d5943fa8" category="cell">NetApp ActiveIQ <block ref="33723d61009b6ad6e20c37f5f073dad1" category="inline-link-rx"></block>)</block>
-  <block id="5dbf9f76b95952a36b5c81bedd95e1c8" category="cell">Comunicazione NetApp ActiveIQ</block>
   <block id="f370975993dbb1e7c1e24af01ed7986c" category="section-title">Browser Web supportati</block>
   <block id="5ee52824555f7e54b800612663b9f098" category="paragraph">Astra Control Center supporta versioni recenti di Firefox, Safari e Chrome con una risoluzione minima di 1280 x 720.</block>
   <block id="01e12de62fa77fda2815719aed8ff892" category="section-title">Cosa succederà</block>
@@ -964,7 +962,6 @@
   <block id="c3314925ef2c97256c3237a450d6f4f5" category="list-text">Lo storage Trident si backend con ONTAP 9.5 e versioni successive</block>
   <block id="5b4b1a973a4751fbfc2fda3bd9bac412" category="list-text">Back-end storage Astra Data Store</block>
   <block id="51269e2584d26b04961877ec77db6da7" category="paragraph">In un ambiente connesso al cloud, Astra Control Center utilizza Cloud Insights per fornire monitoraggio e telemetria avanzati. In assenza di una connessione Cloud Insights, il monitoraggio e la telemetria sono disponibili in un centro di controllo Astra per un periodo di 7 giorni ed esportati anche in strumenti di monitoraggio nativi Kubernetes (come Prometheus e Grafana) attraverso endpoint di metriche aperte.</block>
-  <block id="1bc8163319d46bff9915aa0226885a42" category="paragraph">Il centro di controllo Astra è completamente integrato nell'ecosistema AutoSupport e Active IQ per fornire agli utenti e al supporto NetApp informazioni sulla risoluzione dei problemi e sull'utilizzo.</block>
   <block id="26849905a5aa23f71bc18ee28e352604" category="paragraph">Puoi provare Astra Control Center utilizzando una licenza di valutazione di 90 giorni. La versione di valutazione è supportata tramite le opzioni e-mail e community (slack channel). Inoltre, puoi accedere agli articoli e alla documentazione della Knowledge base dalla dashboard di supporto all'interno del prodotto.</block>
   <block id="b4851e92b19af0c5c82447fc0937709d" category="inline-link">requisiti</block>
   <block id="e63cc3795b9216d59b085bd3111a248d" category="paragraph">Per installare e utilizzare Astra Control Center, è necessario soddisfare determinati requisiti<block ref="bdde32b2c988689d803729c06660acb4" category="inline-link-rx"></block>.</block>
@@ -1828,4 +1825,7 @@
   <block id="8acb58cbd50ef1b468a020ee0bd351d3" category="inline-link-macro"><block ref="8acb58cbd50ef1b468a020ee0bd351d3" category="inline-link-rx"></block></block>
   <block id="2352c4e1f4d0024ade0869e00e6243f4" category="paragraph"><block ref="2352c4e1f4d0024ade0869e00e6243f4" category="inline-link-macro-rx"></block></block>
   <block id="931607e4df934f12f0a0d0323f739e8c" category="list-text"><block ref="46bdba95fad7359beee853f2ee144260" category="inline-link-macro-rx"></block>.</block>
+  <block id="4ffa5f8c75a25d5db0add99affd09af7" category="paragraph">Astra Control Center è completamente integrato nell'ecosistema di consulente digitale di AutoSupport e Active IQ (detto anche Digital Advisor) per fornire agli utenti e a NetApp assistenza per la risoluzione dei problemi e le informazioni sull'utilizzo.</block>
+  <block id="b01720cac678655d10d01884b38e0df9" category="cell">Digital Advisor <block ref="33723d61009b6ad6e20c37f5f073dad1" category="inline-link-rx"></block>)</block>
+  <block id="fffb137d34ba73dd7286c16dae165a77" category="cell">Comunicazione con Digital Advisor</block>
 </blocks>

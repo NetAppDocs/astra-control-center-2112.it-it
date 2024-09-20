@@ -199,7 +199,7 @@ L'ambiente operativo che ospita Astra Control Center comunica utilizzando le seg
 | Centro di controllo Astra | Provider di bucket di storage Amazon S3 (https://my-bucket.s3.us-west-2.amazonaws.com/[]) | 443 | HTTPS | Comunicazione con lo storage Amazon S3 
 
 
-| Centro di controllo Astra | NetApp ActiveIQ (https://activeiq.solidfire.com[]) | 443 | HTTPS | Comunicazione NetApp ActiveIQ 
+| Centro di controllo Astra | Digital Advisor (https://activeiq.solidfire.com[]) | 443 | HTTPS | Comunicazione con Digital Advisor 
 |===
 
 
